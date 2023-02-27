@@ -15,10 +15,9 @@ func (Upload) TableName() string {
 	return "uploads"
 }
 
-//
-//func (u *Upload) Mask(isAdmin bool) {
-//	u.GenUID(common.DBTypeUpload, 1)
-//}
+func (u *Upload) Mask(isAdmin bool) {
+	u.GenUID(common.DbTypeRestaurant)
+}
 
 func ErrFileIsNotImage(err error) *common.AppError {
 	return common.NewCustomError(

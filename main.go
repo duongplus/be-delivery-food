@@ -4,6 +4,7 @@ import (
 	"be-food-delivery/component"
 	"be-food-delivery/component/uploadprovider"
 	"be-food-delivery/middleware"
+	ginrestaurant "be-food-delivery/module/restaurant/restauranttransport/gin"
 	"be-food-delivery/module/upload/uploadtransport/uploadgin"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
@@ -58,14 +59,14 @@ func runService(appCtx component.AppContext) error {
 	r.POST("/upload", uploadgin.UploadHandler(appCtx))
 	r.GET("upload/:id", uploadgin.GetHandler(appCtx))
 
-	//restaurants := r.Group("/restaurants")
-	//{
-	//	restaurants.POST("", ginrestaurant.CreateRestaurant(appCtx))
-	//	restaurants.GET("/:id", ginrestaurant.GetRestaurant(appCtx))
-	//	restaurants.GET("", ginrestaurant.ListRestaurant(appCtx))
-	//	restaurants.PATCH("/:id", ginrestaurant.UpdateRestaurant(appCtx))
-	//	restaurants.DELETE("/:id", ginrestaurant.DeleteRestaurant(appCtx))
-	//}
+	restaurants := r.Group("/restaurants")
+	{
+		restaurants.POST("", ginrestaurant.CreateRestaurantHandler(appCtx))
+		restaurants.GET("/:id", ginrestaurant.GetRestaurantHandler(appCtx))
+		restaurants.GET("", ginrestaurant.ListRestaurantHandler(appCtx))
+		restaurants.PATCH("/:id", ginrestaurant.UpdateRestaurantHandler(appCtx))
+		restaurants.DELETE("/:id", ginrestaurant.DeleteRestaurantHandler(appCtx))
+	}
 
 	return r.Run()
 }
