@@ -16,20 +16,20 @@ func (s *sqlStore) ListDataByCondition(ctx context.Context,
 
 	db := s.db
 
+	db = db.Table(restaurantmodel.Restaurant{}.TableName()).Where(conditions).Where("status in (1)")
+
+	if err := db.Count(&paging.Total).Error; err != nil {
+		return nil, common.ErrDB(err)
+	}
+
 	for i := range moreKeys {
 		db = db.Preload(moreKeys[i])
 	}
-
-	db = db.Table(restaurantmodel.Restaurant{}.TableName()).Where(conditions).Where("status in (1)")
 
 	if v := filter; v != nil {
 		if v.CityId > 0 {
 			db = db.Where("city_id = ?", v.CityId)
 		}
-	}
-
-	if err := db.Count(&paging.Total).Error; err != nil {
-		return nil, common.ErrDB(err)
 	}
 
 	if v := paging.FakeCursor; v != "" {
