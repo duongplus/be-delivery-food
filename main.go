@@ -66,7 +66,7 @@ func runService(appCtx component.AppContext) error {
 	r.POST("/login", ginuser.Login(appCtx))
 	r.GET("/profile", middleware.RequiredAuth(appCtx), ginuser.GetProfile(appCtx))
 
-	restaurants := r.Group("/restaurants")
+	restaurants := r.Group("/restaurants", middleware.RequiredAuth(appCtx))
 	{
 		restaurants.POST("", ginrestaurant.CreateRestaurantHandler(appCtx))
 		restaurants.GET("/:id", ginrestaurant.GetRestaurantHandler(appCtx))
@@ -75,6 +75,8 @@ func runService(appCtx component.AppContext) error {
 		restaurants.DELETE("/:id", ginrestaurant.DeleteRestaurantHandler(appCtx))
 
 		restaurants.GET("/:id/liked-users", ginrestaurantliketransport.ListUser(appCtx))
+		restaurants.POST("/:id/like", ginrestaurantliketransport.UserLikeRestaurantHandler(appCtx))
+		restaurants.DELETE("/:id/unlike", ginrestaurantliketransport.UserUnlikeRestaurantHandler(appCtx))
 	}
 
 	return r.Run()
