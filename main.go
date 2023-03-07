@@ -8,6 +8,8 @@ import (
 	ginrestaurantliketransport "be-food-delivery/module/restaurantlike/transport"
 	"be-food-delivery/module/upload/uploadtransport/uploadgin"
 	"be-food-delivery/module/user/usertransport/ginuser"
+	"be-food-delivery/pubsub/pblocal"
+	"be-food-delivery/subscriber"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -37,7 +39,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	appCtx := component.NewAppContext(db, s3Provider, secretKey)
+	appCtx := component.NewAppContext(db, s3Provider, secretKey, pblocal.NewPubSub())
 
 	if err = runService(appCtx); err != nil {
 		log.Fatalln(err)
@@ -46,6 +48,9 @@ func main() {
 }
 
 func runService(appCtx component.AppContext) error {
+	//subscriber.IncreaseLikeCountAfterUserLikeRestaurant(appCtx, context.Background())
+
+	_ = subscriber.NewEngine(appCtx).Start()
 
 	r := gin.Default()
 

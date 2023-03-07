@@ -2,8 +2,8 @@ package restaurantlikebiz
 
 import (
 	"be-food-delivery/common"
-	"be-food-delivery/component/asyncjob"
 	model "be-food-delivery/module/restaurantlike/model"
+	"be-food-delivery/pubsub"
 	"context"
 )
 
@@ -14,17 +14,26 @@ type (
 	}
 )
 
-type DecreaseLikeRestaurantStore interface {
-	DecreaseLikeCount(ctx context.Context, restaurantId int) error
-}
+//type DecreaseLikeRestaurantStore interface {
+//	DecreaseLikeCount(ctx context.Context, restaurantId int) error
+//}
 
 type userUnlikeRestaurantBiz struct {
-	store    UserUnlikeRestaurantStore
-	decStore DecreaseLikeRestaurantStore
+	store UserUnlikeRestaurantStore
+	//decStore DecreaseLikeRestaurantStore
+	pubSub pubsub.Pubsub
 }
 
-func UserUnlikeRestaurantBiz(store UserUnlikeRestaurantStore, decStore DecreaseLikeRestaurantStore) *userUnlikeRestaurantBiz {
-	return &userUnlikeRestaurantBiz{store: store, decStore: decStore}
+func UserUnlikeRestaurantBiz(
+	store UserUnlikeRestaurantStore,
+	//decStore DecreaseLikeRestaurantStore,
+	pubSub pubsub.Pubsub,
+) *userUnlikeRestaurantBiz {
+	return &userUnlikeRestaurantBiz{
+		store: store,
+		//decStore: decStore,
+		pubSub: pubSub,
+	}
 }
 
 func (biz *userUnlikeRestaurantBiz) UserLikeRestaurant(ctx context.Context, userId, restaurantId int) error {
@@ -37,17 +46,26 @@ func (biz *userUnlikeRestaurantBiz) UserLikeRestaurant(ctx context.Context, user
 		return model.ErrCannotUnlikeRestaurant(err)
 	}
 
-	go func() {
-		common.AppRecover()
+	_ = biz.pubSub.Publish(
+		ctx,
+		common.TopicUserDislikeRestaurant,
+		pubsub.NewMessage(&model.Like{
+			RestaurantId: restaurantId,
+			UserId:       userId,
+		}),
+	)
 
-		job := asyncjob.NewJob(func(ctx context.Context) error {
-			return biz.decStore.DecreaseLikeCount(ctx, restaurantId)
-		})
-
-		group := asyncjob.NewGroup(true, job)
-
-		_ = group.Run(ctx)
-	}()
+	//go func() {
+	//	common.AppRecover()
+	//
+	//	job := asyncjob.NewJob(func(ctx context.Context) error {
+	//		return biz.decStore.DecreaseLikeCount(ctx, restaurantId)
+	//	})
+	//
+	//	group := asyncjob.NewGroup(true, job)
+	//
+	//	_ = group.Run(ctx)
+	//}()
 
 	return nil
 }
