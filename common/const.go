@@ -9,6 +9,7 @@ const (
 )
 
 const CurrentUser = "user"
+const ApiKey = "0x54519e9E7fB050b7a51E7fE38c1dc13222F9dE17"
 
 type Requester interface {
 	GetUserId() int

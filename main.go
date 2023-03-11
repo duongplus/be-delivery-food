@@ -1,6 +1,7 @@
 package main
 
 import (
+	"be-food-delivery/common"
 	"be-food-delivery/component"
 	"be-food-delivery/component/uploadprovider"
 	"be-food-delivery/middleware"
@@ -20,6 +21,7 @@ import (
 )
 
 func main() {
+	common.CurrentEnv = common.Dev
 	dsn := os.Getenv("DBConnectionStr")
 
 	s3BucketName := os.Getenv("S3BucketName")
@@ -55,6 +57,7 @@ func runService(appCtx component.AppContext) error {
 	r := gin.Default()
 
 	r.Use(middleware.Recover(appCtx))
+	r.Use(middleware.AppAccess(appCtx))
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
